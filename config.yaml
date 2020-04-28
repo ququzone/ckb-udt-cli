@@ -1,0 +1,23 @@
+rpc: http://localhost:8114
+
+# sUDT script definition
+udt:
+  deps:
+    -
+      txHash: 0x0e7153f243ba4c980bfd7cd77a90568bb70fd393cb572b211a2f884de63d103d
+      index: 0
+      depType: code
+  script:
+    codeHash: 0x48dbf59b4c7ee1547238021b4869bceedf4eea6b43772e5d66ef8865b6ae7212
+    hashType: data
+
+# Anyone can pay script definition
+acp:
+  deps:
+    -
+      txHash: 0x9af66408df4703763acb10871365e4a21f2c3d3bdc06b0ae634a3ad9f18a6525
+      index: 0
+      depType: dep_group
+  script:
+    codeHash: 0x6a3982f9d018be7e7228f9e0b765f28ceff6d36e634490856d2b186acf78e79b
+    hashType: type
