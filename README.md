@@ -1,6 +1,14 @@
 ckb udt cli
 ===========
 
+## Build
+
+```bash
+export GOPROXY=https://goproxy.io
+go mod download
+go build .
+```
+
 ## Usage
 
 ### Issue
