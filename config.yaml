@@ -1,4 +1,4 @@
-rpc: http://localhost:8114
+rpc: http://localhost:8115
 
 # sUDT script definition
 udt:
