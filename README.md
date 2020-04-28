@@ -20,6 +20,6 @@ go build .
 ### Transfer
 
 ```bash
-./ckb-udt-cli transfer -k YOUR_PRIVATE_KEY -t RECIPIENT_ADDRESS -a AMOUNT
+./ckb-udt-cli transfer -k YOUR_PRIVATE_KEY -u UUID -t RECIPIENT_ADDRESS -a AMOUNT
 ```
 
