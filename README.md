@@ -14,7 +14,7 @@ go build .
 ### Issue
 
 ```bash
-./ckb-udt-cli issue -c config.yaml  -k YOUR_PRIVATE_KEY -a AMOUNT
+./ckb-udt-cli issue -c config.yaml -k YOUR_PRIVATE_KEY -a AMOUNT
 ```
 
 ### Transfer
