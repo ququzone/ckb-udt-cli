@@ -6,8 +6,11 @@ import (
 )
 
 var (
-	to   *string
-	uuid *string
+	transferConf   *string
+	transferKey    *string
+	transferAmount *string
+	transferTo     *string
+	transferUUID   *string
 )
 
 var transferCmd = &cobra.Command{
@@ -22,10 +25,11 @@ var transferCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(transferCmd)
 
-	key = transferCmd.Flags().StringP("key", "k", "", "From private key")
-	uuid = transferCmd.Flags().StringP("uuid", "u", "", "UDT uuid")
-	amount = transferCmd.Flags().StringP("amount", "a", "", "Transfer amount")
-	to = transferCmd.Flags().StringP("to", "t", "", "Transfer recipient address")
+	transferConf = transferCmd.Flags().StringP("config", "c", "", "Config file")
+	transferKey = transferCmd.Flags().StringP("key", "k", "", "From private key")
+	transferUUID = transferCmd.Flags().StringP("uuid", "u", "", "UDT uuid")
+	transferAmount = transferCmd.Flags().StringP("amount", "a", "", "Transfer amount")
+	transferTo = transferCmd.Flags().StringP("to", "t", "", "Transfer recipient address")
 	_ = transferCmd.MarkFlagRequired("key")
 	_ = transferCmd.MarkFlagRequired("amount")
 	_ = transferCmd.MarkFlagRequired("uuid")

@@ -6,8 +6,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var C *Config
-
 type Config struct {
 	RPC string `yaml:"rpc"`
 
@@ -36,17 +34,17 @@ type Config struct {
 	} `yaml:"acp"`
 }
 
-func Init() error {
+func Init(path string) (*Config, error) {
 	var c Config
 
-	file, err := ioutil.ReadFile("config.yaml")
+	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = yaml.Unmarshal(file, &c)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	C = &c
-	return nil
+
+	return &c, nil
 }

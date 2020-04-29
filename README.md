@@ -14,12 +14,12 @@ go build .
 ### Issue
 
 ```bash
-./ckb-udt-cli issue -k YOUR_PRIVATE_KEY -a AMOUNT
+./ckb-udt-cli -c config.yaml issue -k YOUR_PRIVATE_KEY -a AMOUNT
 ```
 
 ### Transfer
 
 ```bash
-./ckb-udt-cli transfer -k YOUR_PRIVATE_KEY -u UUID -t RECIPIENT_ADDRESS -a AMOUNT
+./ckb-udt-cli -c config.yaml transfer -k YOUR_PRIVATE_KEY -u UUID -t RECIPIENT_ADDRESS -a AMOUNT
 ```
 
