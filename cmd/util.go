@@ -3,11 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"os"
+
 	"github.com/ququzone/ckb-sdk-go/rpc"
 	"github.com/ququzone/ckb-sdk-go/types"
 	"github.com/ququzone/ckb-sdk-go/utils"
-	"math/big"
-	"os"
 )
 
 func Fatalf(format string, v ...interface{}) {

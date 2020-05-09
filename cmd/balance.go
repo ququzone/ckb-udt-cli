@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/ququzone/ckb-sdk-go/address"
 	"github.com/ququzone/ckb-sdk-go/rpc"
 	"github.com/ququzone/ckb-sdk-go/types"
 	"github.com/ququzone/ckb-sdk-go/utils"
 	"github.com/ququzone/ckb-udt-cli/config"
 	"github.com/spf13/cobra"
-	"math/big"
 )
 
 var (
