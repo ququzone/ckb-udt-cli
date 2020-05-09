@@ -49,14 +49,14 @@ var createCellCmd = &cobra.Command{
 		capacity := uint64(15000000000)
 		fee := uint64(1000)
 
-		cellCollector := utils.NewCellCollector(client, change, capacity+fee)
-		cells, total, err := cellCollector.Collect()
+		cellCollector := utils.NewCellCollector(client, change, utils.NewCapacityCellProcessor(capacity+fee))
+		cells, err := cellCollector.Collect()
 		if err != nil {
 			Fatalf("collect cell error: %v", err)
 		}
 
-		if total < capacity+fee {
-			Fatalf("insufficient capacity: %d < %d", total, capacity+fee)
+		if cells.Capacity < capacity+fee {
+			Fatalf("insufficient capacity: %d < %d", cells.Capacity, capacity+fee)
 		}
 
 		tx := transaction.NewSecp256k1SingleSigTx(scripts)
@@ -87,17 +87,17 @@ var createCellCmd = &cobra.Command{
 		})
 		tx.OutputsData = append(tx.OutputsData, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,})
 
-		if total-capacity+fee > 6100000000 {
+		if cells.Capacity-capacity+fee > 6100000000 {
 			tx.Outputs = append(tx.Outputs, &types.CellOutput{
-				Capacity: total - capacity - fee,
+				Capacity: cells.Capacity - capacity - fee,
 				Lock:     change,
 			})
 			tx.OutputsData = append(tx.OutputsData, []byte{})
 		} else {
-			tx.Outputs[1].Capacity = tx.Outputs[1].Capacity + total - capacity + fee
+			tx.Outputs[1].Capacity = tx.Outputs[1].Capacity + cells.Capacity - capacity + fee
 		}
 
-		group, witnessArgs, err := transaction.AddInputsForTransaction(tx, cells)
+		group, witnessArgs, err := transaction.AddInputsForTransaction(tx, cells.Cells)
 		if err != nil {
 			Fatalf("add inputs to transaction error: %v", err)
 		}
