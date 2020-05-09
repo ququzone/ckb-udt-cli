@@ -3,8 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"math/big"
 
+	"github.com/ququzone/ckb-sdk-go/address"
 	"github.com/ququzone/ckb-sdk-go/crypto/secp256k1"
 	"github.com/ququzone/ckb-sdk-go/rpc"
 	"github.com/ququzone/ckb-sdk-go/transaction"
@@ -15,17 +15,17 @@ import (
 )
 
 var (
-	issueConf   *string
-	issueKey    *string
-	issueAmount *string
+	createCellConf *string
+	createCellKey  *string
+	createCellUUID *string
 )
 
-var issueCmd = &cobra.Command{
-	Use:   "issue",
-	Short: "Issue sUDT token",
-	Long:  `Issue sUDT with secp256k1 cell.`,
+var createCellCmd = &cobra.Command{
+	Use:   "create-cell",
+	Short: "create anyone can pay cell for sUDT token",
+	Long:  `create anyone can pay cell for sUDT token.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := config.Init(*issueConf)
+		c, err := config.Init(*createCellConf)
 		if err != nil {
 			Fatalf("load config error: %v", err)
 		}
@@ -35,7 +35,7 @@ var issueCmd = &cobra.Command{
 			Fatalf("create rpc client error: %v", err)
 		}
 
-		key, err := secp256k1.HexToKey(*issueKey)
+		key, err := secp256k1.HexToKey(*createCellKey)
 		if err != nil {
 			Fatalf("import private key error: %v", err)
 		}
@@ -46,8 +46,7 @@ var issueCmd = &cobra.Command{
 		}
 
 		change, err := key.Script(scripts)
-
-		capacity := uint64(14200000000)
+		capacity := uint64(15000000000)
 		fee := uint64(1000)
 
 		cellCollector := utils.NewCellCollector(client, change, capacity+fee)
@@ -70,27 +69,24 @@ var issueCmd = &cobra.Command{
 				DepType: types.DepType(dep.DepType),
 			})
 		}
-		uuid, _ := change.Hash()
 
+		// cell
+		lock := &types.Script{
+			CodeHash: types.HexToHash(c.ACP.Script.CodeHash),
+			HashType: types.ScriptHashType(c.ACP.Script.HashType),
+			Args:     change.Args,
+		}
 		tx.Outputs = append(tx.Outputs, &types.CellOutput{
 			Capacity: uint64(capacity),
-			Lock: &types.Script{
-				CodeHash: change.CodeHash,
-				HashType: change.HashType,
-				Args:     change.Args,
-			},
+			Lock:     lock,
 			Type: &types.Script{
 				CodeHash: types.HexToHash(c.UDT.Script.CodeHash),
 				HashType: types.ScriptHashType(c.UDT.Script.HashType),
-				Args:     uuid.Bytes(),
+				Args:     types.HexToHash(*createCellUUID).Bytes(),
 			},
 		})
-		a, _ := big.NewInt(0).SetString(*issueAmount, 10)
-		b := a.Bytes()
-		for i := 0; i < len(b)/2; i++ {
-			b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
-		}
-		tx.OutputsData = append(tx.OutputsData, b)
+		tx.OutputsData = append(tx.OutputsData, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,})
+
 		if total-capacity+fee > 6100000000 {
 			tx.Outputs = append(tx.Outputs, &types.CellOutput{
 				Capacity: total - capacity - fee,
@@ -115,17 +111,17 @@ var issueCmd = &cobra.Command{
 		if err != nil {
 			Fatalf("send transaction error: %v", err)
 		}
+		addr, _ := address.Generate(address.Testnet, lock)
 
-		fmt.Printf("Issued sUDT transaction hash: %s, uuid: %s\n", hash.String(), uuid.String())
+		fmt.Printf("create anyone can pay cell transaction hash: %s, address: %s\n", hash.String(), addr)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(issueCmd)
+	rootCmd.AddCommand(createCellCmd)
 
-	issueConf = issueCmd.Flags().StringP("config", "c", "config.yaml", "Config file")
-	issueKey = issueCmd.Flags().StringP("key", "k", "", "Issue private key")
-	issueAmount = issueCmd.Flags().StringP("amount", "a", "", "Issue amount")
-	_ = issueCmd.MarkFlagRequired("key")
-	_ = issueCmd.MarkFlagRequired("amount")
+	createCellConf = createCellCmd.Flags().StringP("config", "c", "config.yaml", "Config file")
+	createCellKey = createCellCmd.Flags().StringP("key", "k", "", "Private key")
+	createCellUUID = createCellCmd.Flags().StringP("uuid", "u", "", "UDT uuid")
+	_ = createCellCmd.MarkFlagRequired("key")
 }

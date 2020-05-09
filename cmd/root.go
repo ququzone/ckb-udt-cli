@@ -10,7 +10,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "ckb-udt-cli",
 	Short: "ckb udt cli",
-	Long:  `ckb udt cli demo how to issue and transfer sUDT.`,
+	Long:  `ckb udt cli demo how to issue and createCell sUDT.`,
 }
 
 func Execute() {

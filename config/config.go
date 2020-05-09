@@ -24,7 +24,7 @@ type Config struct {
 	ACP struct {
 		Deps []struct {
 			TxHash  string `yaml:"txHash"`
-			Index   int    `yaml:"index"`
+			Index   uint   `yaml:"index"`
 			DepType string `yaml:"depType"`
 		} `yaml:"deps"`
 		Script struct {
