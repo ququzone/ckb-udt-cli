@@ -23,13 +23,13 @@ go build .
 ./ckb-udt-cli create-cell -c config.yaml -k YOUR_PRIVATE_KEY -u UUID
 ```
 
-### transfer
+### Transfer
 
 ```bash
 ./ckb-udt-cli transfer -c config.yaml -k YOUR_PRIVATE_KEY -u UUID -t RECIPIENT_ADDRESS -a AMOUNT
 ```
 
-### balance
+### Balance
 
 ```bash
 ./ckb-udt-cli balance -c config.yaml -u UUID -a ADDRESS

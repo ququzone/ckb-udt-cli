@@ -7,7 +7,6 @@ import (
 	"github.com/ququzone/ckb-sdk-go/address"
 	"github.com/ququzone/ckb-sdk-go/rpc"
 	"github.com/ququzone/ckb-sdk-go/types"
-	"github.com/ququzone/ckb-sdk-go/utils"
 	"github.com/ququzone/ckb-udt-cli/config"
 	"github.com/spf13/cobra"
 )
@@ -38,23 +37,12 @@ var balanceCmd = &cobra.Command{
 			Fatalf("parse address error: %v", err)
 		}
 
-		cellCollector := utils.NewCellCollector(client, addr.Script, NewUDTCellProcessor(client, nil))
-		cellCollector.EmptyData = false
-		cellCollector.TypeScript = &types.Script{
-			CodeHash: types.HexToHash(c.UDT.Script.CodeHash),
-			HashType: types.ScriptHashType(c.UDT.Script.HashType),
-			Args:     types.HexToHash(*balanceUUID).Bytes(),
-		}
-		cells, err := cellCollector.Collect()
+		cells, err := CollectUDT(client, c, addr.Script, types.HexToHash(*balanceUUID).Bytes(), nil)
 		if err != nil {
 			Fatalf("collect cell error: %v", err)
 		}
-		total, ok := cells.Options["total"]
-		if !ok {
-			total = big.NewInt(0)
-		}
 
-		fmt.Printf("Address %s amount: %s\n", *balanceAddr, total.(*big.Int).String())
+		fmt.Printf("Address %s amount: %s\n", *balanceAddr, cells.Options["total"].(*big.Int).String())
 	},
 }
 

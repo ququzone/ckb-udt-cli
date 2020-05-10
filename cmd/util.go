@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/ququzone/ckb-udt-cli/config"
 	"math/big"
 	"os"
 
@@ -51,4 +52,22 @@ func (p *UDTCellProcessor) Process(cell *types.Cell, result *utils.CollectResult
 		return true, nil
 	}
 	return false, nil
+}
+
+func CollectUDT(client rpc.Client, c *config.Config, lock *types.Script, uuid []byte, max *big.Int) (*utils.CollectResult, error) {
+	cellCollector := utils.NewCellCollector(client, lock, NewUDTCellProcessor(client, max))
+	cellCollector.EmptyData = false
+	cellCollector.TypeScript = &types.Script{
+		CodeHash: types.HexToHash(c.UDT.Script.CodeHash),
+		HashType: types.ScriptHashType(c.UDT.Script.HashType),
+		Args:     uuid,
+	}
+	cells, err := cellCollector.Collect()
+	if err != nil {
+		return nil, err
+	}
+	if _, ok := cells.Options["total"]; !ok {
+		cells.Options["total"] = big.NewInt(0)
+	}
+	return cells, nil
 }
