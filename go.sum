@@ -172,6 +172,8 @@ github.com/ququzone/ckb-sdk-go v0.2.0 h1:2PJCmP1lJ2asc/JUmCwGun53xnChiv1+RLO79zz
 github.com/ququzone/ckb-sdk-go v0.2.0/go.mod h1:2936vdPUlfCuzm48FkeSJ3vB2vNz+6//t5ukzy8UPws=
 github.com/ququzone/ckb-sdk-go v0.2.1 h1:5WcpVU4dxOl8VAT9gR72EDU28xs8yyykPwTCbtypqBA=
 github.com/ququzone/ckb-sdk-go v0.2.1/go.mod h1:2936vdPUlfCuzm48FkeSJ3vB2vNz+6//t5ukzy8UPws=
+github.com/ququzone/ckb-sdk-go v0.2.2 h1:yu/fuqZ2ojyoq02u/NhDLhfI9aKd5qfKC0gCewbf6qk=
+github.com/ququzone/ckb-sdk-go v0.2.2/go.mod h1:2936vdPUlfCuzm48FkeSJ3vB2vNz+6//t5ukzy8UPws=
 github.com/rjeczalik/notify v0.9.1/go.mod h1:rKwnCoCGeuQnwBtTSPL9Dad03Vh2n40ePRrjvIXnJho=
 github.com/robertkrimen/otto v0.0.0-20170205013659-6a77b7cbc37d/go.mod h1:xvqspoSXJTIpemEonrMDFq6XzwHYYgToXWj5eRX1OtY=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
