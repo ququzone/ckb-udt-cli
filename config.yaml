@@ -1,10 +1,10 @@
-rpc: http://localhost:8115
+rpc: http://localhost:8114
 
 # sUDT script definition
 udt:
   deps:
     -
-      txHash: 0x0e7153f243ba4c980bfd7cd77a90568bb70fd393cb572b211a2f884de63d103d
+      txHash: 0xc1b2ae129fad7465aaa9acc9785f842ba3e6e8b8051d899defa89f5508a77958
       index: 0
       depType: code
   script:
@@ -15,9 +15,9 @@ udt:
 acp:
   deps:
     -
-      txHash: 0x9af66408df4703763acb10871365e4a21f2c3d3bdc06b0ae634a3ad9f18a6525
+      txHash: 0x36e89e90f980d5a8b774dd42482c55f1368444272e22bd8f10ae7b5348178054
       index: 0
       depType: dep_group
   script:
-    codeHash: 0x6a3982f9d018be7e7228f9e0b765f28ceff6d36e634490856d2b186acf78e79b
+    codeHash: 0x7783e303a1945ba9df86f0bc2cc1543a0992747954f3d3170cec08e1bcce6d8b
     hashType: type
