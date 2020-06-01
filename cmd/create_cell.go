@@ -46,7 +46,7 @@ var createCellCmd = &cobra.Command{
 		}
 
 		change, err := key.Script(scripts)
-		capacity := uint64(15000000000)
+		capacity := uint64(14200000000)
 		fee := uint64(1000)
 
 		cellCollector := utils.NewCellCollector(client, change, utils.NewCapacityCellProcessor(capacity+fee))

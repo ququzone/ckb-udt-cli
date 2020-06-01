@@ -51,7 +51,7 @@ var transferCmd = &cobra.Command{
 
 		uuid := types.HexToHash(*transferUUID).Bytes()
 
-		capacity := uint64(30000000000)
+		capacity := uint64(28400000000)
 		fee := uint64(1000)
 		recipientAcp := false
 		recipientAddr, err := address.Parse(*transferTo)
@@ -60,7 +60,7 @@ var transferCmd = &cobra.Command{
 			Fatalf("parse to address error: %v", err)
 		}
 		if recipientAddr.Script.CodeHash.String() == c.ACP.Script.CodeHash {
-			capacity -= 15000000000
+			capacity -= 14200000000
 			recipientAcp = true
 			cells, err := CollectUDT(client, c, recipientAddr.Script, uuid, big.NewInt(0))
 			if err != nil {
@@ -157,10 +157,15 @@ var transferCmd = &cobra.Command{
 			for i := 0; i < len(b)/2; i++ {
 				b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
 			}
+			if len(b) < 16 {
+				for i := len(b); i < 16; i++ {
+					b = append(b, 0)
+				}
+			}
 			tx.OutputsData = append(tx.OutputsData, b)
 		} else {
 			tx.Outputs = append(tx.Outputs, &types.CellOutput{
-				Capacity: uint64(15000000000),
+				Capacity: uint64(14200000000),
 				Lock:     recipientAddr.Script,
 				Type: &types.Script{
 					CodeHash: types.HexToHash(c.UDT.Script.CodeHash),
@@ -172,6 +177,11 @@ var transferCmd = &cobra.Command{
 			for i := 0; i < len(b)/2; i++ {
 				b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
 			}
+			if len(b) < 16 {
+				for i := len(b); i < 16; i++ {
+					b = append(b, 0)
+				}
+			}
 			tx.OutputsData = append(tx.OutputsData, b)
 		}
 
@@ -180,7 +190,7 @@ var transferCmd = &cobra.Command{
 			changeCapacity += feeCells.Capacity
 		}
 		if !recipientAcp {
-			changeCapacity -= 15000000000
+			changeCapacity -= 14200000000
 		}
 
 		tx.Outputs = append(tx.Outputs, &types.CellOutput{
@@ -198,6 +208,11 @@ var transferCmd = &cobra.Command{
 			b := big.NewInt(0).Sub(cells.Options["total"].(*big.Int), amount).Bytes()
 			for i := 0; i < len(b)/2; i++ {
 				b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
+			}
+			if len(b) < 16 {
+				for i := len(b); i < 16; i++ {
+					b = append(b, 0)
+				}
 			}
 			tx.OutputsData = append(tx.OutputsData, b)
 		}
@@ -217,6 +232,8 @@ var transferCmd = &cobra.Command{
 		if err != nil {
 			Fatalf("sign transaction error: %v", err)
 		}
+
+		fmt.Println(rpc.TransactionString(tx))
 
 		hash, err := client.SendTransaction(context.Background(), tx)
 		if err != nil {

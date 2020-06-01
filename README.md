@@ -37,5 +37,5 @@ go build .
 
 ## Example data
 
-uuid: `0xcd64ecc1fa2570073cbe9b2dfda7974288b564f323b4cd07e9d84fef22d62661`
+uuid: `0x94bbc8327e16d195de87815c391e7b9131e80419c51a405a0b21227c6ee05129`
 

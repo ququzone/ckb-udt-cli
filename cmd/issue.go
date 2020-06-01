@@ -90,6 +90,11 @@ var issueCmd = &cobra.Command{
 		for i := 0; i < len(b)/2; i++ {
 			b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
 		}
+		if len(b) < 16 {
+			for i := len(b); i < 16; i++ {
+				b = append(b, 0)
+			}
+		}
 		tx.OutputsData = append(tx.OutputsData, b)
 		if cells.Capacity-capacity+fee > 6100000000 {
 			tx.Outputs = append(tx.Outputs, &types.CellOutput{
