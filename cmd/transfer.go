@@ -187,7 +187,7 @@ var transferCmd = &cobra.Command{
 
 		changeCapacity := cells.Capacity - fee
 		if feeCells != nil {
-			changeCapacity += feeCells.Capacity
+			changeCapacity += capacity + fee - cells.Capacity
 		}
 		if !recipientAcp {
 			changeCapacity -= 14200000000
@@ -215,6 +215,14 @@ var transferCmd = &cobra.Command{
 				}
 			}
 			tx.OutputsData = append(tx.OutputsData, b)
+		}
+
+		if feeCells != nil && feeCells.Capacity-capacity+fee-cells.Capacity > 6100000000 {
+			tx.Outputs = append(tx.Outputs, &types.CellOutput{
+				Capacity: feeCells.Capacity - capacity + fee - cells.Capacity,
+				Lock:     fromScript,
+			})
+			tx.OutputsData = append(tx.OutputsData, []byte{})
 		}
 
 		var inputs []*types.Cell
