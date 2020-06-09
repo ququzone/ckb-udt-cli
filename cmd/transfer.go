@@ -153,7 +153,7 @@ var transferCmd = &cobra.Command{
 				Lock:     recipientCell.Lock,
 				Type:     recipientCell.Type,
 			})
-			b := amount.Bytes()
+			b := big.NewInt(0).Add(cells.Options["total"].(*big.Int), amount).Bytes()
 			for i := 0; i < len(b)/2; i++ {
 				b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
 			}
@@ -241,10 +241,9 @@ var transferCmd = &cobra.Command{
 			Fatalf("sign transaction error: %v", err)
 		}
 
-		fmt.Println(rpc.TransactionString(tx))
-
 		hash, err := client.SendTransaction(context.Background(), tx)
 		if err != nil {
+			fmt.Println(rpc.TransactionString(tx))
 			Fatalf("send transaction error: %v", err)
 		}
 

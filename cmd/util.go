@@ -13,7 +13,7 @@ import (
 )
 
 func Fatalf(format string, v ...interface{}) {
-	fmt.Printf(format, v)
+	fmt.Printf(format, v...)
 	os.Exit(1)
 }
 
