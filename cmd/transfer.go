@@ -51,30 +51,31 @@ var transferCmd = &cobra.Command{
 
 		uuid := types.HexToHash(*transferUUID).Bytes()
 
-		capacity := uint64(14200000000)
-		fee := uint64(1000)
+		capacity := uint64(28400000000)
+		fee := uint64(5000)
 		recipientAddr, err := address.Parse(*transferTo)
 		if err != nil {
 			Fatalf("parse to address error: %v", err)
 		}
-		if recipientAddr.Script.CodeHash.String() != c.ACP.Script.CodeHash {
-			Fatalf("only supports anyone can pay address")
-		}
 
-		cells, err := CollectUDT(client, c, recipientAddr.Script, uuid, big.NewInt(0))
-		if err != nil {
-			Fatalf("collect cell error: %v", err)
+		var recipientCell *types.Cell
+		if recipientAddr.Script.CodeHash.String() == c.ACP.Script.CodeHash {
+			cells, err := CollectUDT(client, c, recipientAddr.Script, uuid, big.NewInt(0))
+			if err != nil {
+				Fatalf("collect cell error: %v", err)
+			}
+			if len(cells.Cells) == 0 {
+				Fatalf("can't find anyone can pay cell for %s", *transferTo)
+			}
+			recipientCell = cells.Cells[0]
 		}
-		if len(cells.Cells) == 0 {
-			Fatalf("can't find anyone can pay cell for %s", *transferTo)
-		}
-		recipientCell := cells.Cells[0]
 
 		scripts, err := utils.NewSystemScripts(client)
 		if err != nil {
 			Fatalf("load system script error: %v", err)
 		}
 
+		fromAcp := true
 		fromSecp256k1Script, err := key.Script(scripts)
 		fromScript := &types.Script{
 			CodeHash: types.HexToHash(c.ACP.Script.CodeHash),
@@ -82,7 +83,7 @@ var transferCmd = &cobra.Command{
 			Args:     fromSecp256k1Script.Args,
 		}
 
-		cells, err = CollectUDT(client, c, fromScript, uuid, amount)
+		cells, err := CollectUDT(client, c, fromScript, uuid, amount)
 		if err != nil {
 			Fatalf("collect cell error: %v", err)
 		}
@@ -96,6 +97,7 @@ var transferCmd = &cobra.Command{
 			if cells.Options["total"].(*big.Int).Cmp(amount) < 0 {
 				Fatalf("insufficient UDT balance")
 			}
+			fromAcp = false
 		}
 
 		tx := transaction.NewSecp256k1SingleSigTx(scripts)
@@ -108,14 +110,16 @@ var transferCmd = &cobra.Command{
 				DepType: types.DepType(dep.DepType),
 			})
 		}
-		for _, dep := range c.ACP.Deps {
-			tx.CellDeps = append(tx.CellDeps, &types.CellDep{
-				OutPoint: &types.OutPoint{
-					TxHash: types.HexToHash(dep.TxHash),
-					Index:  dep.Index,
-				},
-				DepType: types.DepType(dep.DepType),
-			})
+		if fromAcp || recipientCell != nil {
+			for _, dep := range c.ACP.Deps {
+				tx.CellDeps = append(tx.CellDeps, &types.CellDep{
+					OutPoint: &types.OutPoint{
+						TxHash: types.HexToHash(dep.TxHash),
+						Index:  dep.Index,
+					},
+					DepType: types.DepType(dep.DepType),
+				})
+			}
 		}
 
 		var feeCells *utils.CollectResult
@@ -131,50 +135,67 @@ var transferCmd = &cobra.Command{
 			}
 		}
 
-		input := &types.CellInput{
-			Since: 0,
-			PreviousOutput: &types.OutPoint{
-				TxHash: recipientCell.OutPoint.TxHash,
-				Index:  recipientCell.OutPoint.Index,
-			},
-		}
-		tx.Inputs = append(tx.Inputs, input)
-		tx.Witnesses = append(tx.Witnesses, []byte{})
-
-		tx.Outputs = append(tx.Outputs, &types.CellOutput{
-			Capacity: recipientCell.Capacity,
-			Lock:     recipientCell.Lock,
-			Type:     recipientCell.Type,
-		})
-
-		originTx, err := client.GetTransaction(context.Background(), recipientCell.OutPoint.TxHash)
-		if err != nil {
-			Fatalf("query anyone can pay transaction error: %v", err)
-		}
-		b := originTx.Transaction.OutputsData[recipientCell.OutPoint.Index]
-		for i := 0; i < len(b)/2; i++ {
-			b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
-		}
-		origin := big.NewInt(0).SetBytes(b)
-
-		b = big.NewInt(0).Add(origin, amount).Bytes()
-		for i := 0; i < len(b)/2; i++ {
-			b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
-		}
-		if len(b) < 16 {
-			for i := len(b); i < 16; i++ {
-				b = append(b, 0)
+		if recipientCell != nil {
+			capacity -= 14200000000
+			input := &types.CellInput{
+				Since: 0,
+				PreviousOutput: &types.OutPoint{
+					TxHash: recipientCell.OutPoint.TxHash,
+					Index:  recipientCell.OutPoint.Index,
+				},
 			}
-		}
-		tx.OutputsData = append(tx.OutputsData, b)
+			tx.Inputs = append(tx.Inputs, input)
+			tx.Witnesses = append(tx.Witnesses, []byte{})
+			tx.Outputs = append(tx.Outputs, &types.CellOutput{
+				Capacity: recipientCell.Capacity,
+				Lock:     recipientCell.Lock,
+				Type:     recipientCell.Type,
+			})
+			originTx, err := client.GetTransaction(context.Background(), recipientCell.OutPoint.TxHash)
+			if err != nil {
+				Fatalf("query anyone can pay transaction error: %v", err)
+			}
+			b := originTx.Transaction.OutputsData[recipientCell.OutPoint.Index]
+			for i := 0; i < len(b)/2; i++ {
+				b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
+			}
+			origin := big.NewInt(0).SetBytes(b)
 
-		changeCapacity := cells.Capacity - fee
-		if feeCells != nil {
-			changeCapacity = cells.Capacity
+			b = big.NewInt(0).Add(origin, amount).Bytes()
+			for i := 0; i < len(b)/2; i++ {
+				b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
+			}
+			if len(b) < 16 {
+				for i := len(b); i < 16; i++ {
+					b = append(b, 0)
+				}
+			}
+			tx.OutputsData = append(tx.OutputsData, b)
+		} else {
+			tx.Outputs = append(tx.Outputs, &types.CellOutput{
+				Capacity: 14200000000,
+				Lock:     recipientAddr.Script,
+				Type: &types.Script{
+					CodeHash: types.HexToHash(c.UDT.Script.CodeHash),
+					HashType: types.ScriptHashType(c.UDT.Script.HashType),
+					Args:     uuid,
+				},
+			})
+
+			b := amount.Bytes()
+			for i := 0; i < len(b)/2; i++ {
+				b[i], b[len(b)-i-1] = b[len(b)-i-1], b[i]
+			}
+			if len(b) < 16 {
+				for i := len(b); i < 16; i++ {
+					b = append(b, 0)
+				}
+			}
+			tx.OutputsData = append(tx.OutputsData, b)
 		}
 
 		tx.Outputs = append(tx.Outputs, &types.CellOutput{
-			Capacity: changeCapacity,
+			Capacity: 14200000000,
 			Lock:     fromScript,
 			Type: &types.Script{
 				CodeHash: types.HexToHash(c.UDT.Script.CodeHash),
@@ -197,12 +218,29 @@ var transferCmd = &cobra.Command{
 			tx.OutputsData = append(tx.OutputsData, b)
 		}
 
-		if feeCells != nil && feeCells.Capacity-fee > 6100000000 {
+		if cells.Capacity-capacity-fee >= 6100000000 || (feeCells != nil && cells.Capacity-capacity-fee+feeCells.Capacity >= 6100000000) {
+			change := cells.Capacity - fee - 14200000000
+			if feeCells != nil {
+				change += feeCells.Capacity
+			}
+			if recipientCell == nil {
+				change -= 14200000000
+			}
 			tx.Outputs = append(tx.Outputs, &types.CellOutput{
-				Capacity: feeCells.Capacity - fee,
+				Capacity: change,
 				Lock:     fromScript,
 			})
+
 			tx.OutputsData = append(tx.OutputsData, []byte{})
+		} else {
+			change := cells.Capacity - fee
+			if feeCells != nil {
+				change += feeCells.Capacity
+			}
+			if recipientCell == nil {
+				change -= 14200000000
+			}
+			tx.Outputs[1].Capacity = change
 		}
 
 		var inputs []*types.Cell
